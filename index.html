@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://vxevjynsfzemnzqxcfgt.supabase.co; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
   <title>Massanutten New Year's</title>
   <link rel="icon" href="./favicon.png">
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles.css?v=3">
   <style>
     .page { max-width: 980px; margin: 0 auto; padding: 1.5rem 1rem 4rem; display: grid; gap: 1.5rem; }
 
@@ -17,7 +19,26 @@
 
     .hero { display: flex; align-items: center; justify-content: center; gap: 2rem; flex-wrap: wrap; }
     .hero pre { margin: 0; font-size: 11px; line-height: 1.15; color: var(--ice); }
-    .hero p { margin: 0; max-width: 28ch; color: var(--ice-dim); font-size: 1.05rem; }
+    .hero .welcome {
+      margin: 0; max-width: 22ch; font-size: clamp(1.3rem, 3.2vw, 2rem); line-height: 1.35;
+      letter-spacing: .04em; text-transform: none; color: #fff;
+      text-shadow: 0 0 12px rgba(207, 232, 255, .55);
+    }
+    .welcome .word { display: inline-block; white-space: nowrap; }
+    .welcome .ch {
+      display: inline-block;
+      animation: shake var(--dur, .35s) linear infinite;
+      animation-delay: var(--delay, 0s);
+    }
+    @keyframes shake {
+      0%   { transform: translate(0, 0) rotate(0); }
+      20%  { transform: translate(-1.5px, 1px) rotate(-4deg); }
+      40%  { transform: translate(1.5px, -1px) rotate(3deg); }
+      60%  { transform: translate(-1px, -1.5px) rotate(-2deg); }
+      80%  { transform: translate(1px, 1.5px) rotate(4deg); }
+      100% { transform: translate(0, 0) rotate(0); }
+    }
+    @media (prefers-reduced-motion: reduce) { .welcome .ch { animation: none; } }
 
     .roster-table { width: 100%; border-collapse: collapse; }
     .roster-table th { text-align: left; font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ice-dim); padding: .25rem .5rem .6rem; border-bottom: 1px solid var(--frost-border); }
@@ -92,22 +113,22 @@
         _______
        /  N Y  \
       /_________\
-     =============
-        .-""-.
-       / .--. \
-      / /    \ \
-      | | ◉  ◉ | |
-      | |  &gt;&lt;  | |
-     /|  \____/  |\
-    / |  /    \  | \
-   (_ | |      | | _)
-     \| |      | |/
-      \ \      / /
-       '-\____/-'
-        _/_/\_\_
-       (__)  (__)
+    ===============
+       .-"""""-.
+      / .-----. \
+     / /       \ \
+     | |  ◉ ◉  | |
+     | |  \_/  | |
+    /| |  ___  | |\
+   / | | /   \ | | \
+  (_ | | |   | | | _)
+    \| | \___/ | |/
+     \ \       / /
+      '-\_____/-'
+      _/_/   \_\_
+     (___)   (___)
 </pre>
-      <p>Dec 30 through Jan 3. Names light up once each person signs in for the first time.</p>
+      <h2 class="welcome" id="welcome">WELCOME TO JACK D. RELICHMAN'S 2026 SENDOFF 2027 JUMPSTART WEEKEND GETAWAY OF YOUR DREAMS !!!</h2>
     </section>
 
     <section class="card">
@@ -133,7 +154,7 @@
       <form class="password-form" id="password-form">
         <div>
           <label for="new-password">Set your own password (optional)</label>
-          <input id="new-password" type="password" minlength="2" autocomplete="new-password" required>
+          <input id="new-password" type="password" minlength="6" maxlength="72" autocomplete="new-password" required>
         </div>
         <button type="submit">Save</button>
       </form>
@@ -143,7 +164,8 @@
     <p class="status" id="status" role="status"></p>
   </div>
 
-  <script src="./snow.js"></script>
-  <script type="module" src="./app.js"></script>
+  <script src="./vendor/supabase-js-2.117.3.umd.js?v=3"></script>
+  <script src="./snow.js?v=3"></script>
+  <script type="module" src="./app.js?v=3"></script>
 </body>
 </html>

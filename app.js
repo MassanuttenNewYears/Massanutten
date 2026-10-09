@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient.js";
+import { supabase } from "./supabaseClient.js?v=3";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, props = {}, children = []) => {
@@ -94,6 +94,24 @@ async function loadAll() {
   renderCars(cars.data);
   renderItinerary(days.data);
 }
+
+// Split the welcome headline into individually shaking letters (words stay unbroken).
+function shakeLetters(node) {
+  const text = node.textContent.trim();
+  node.setAttribute("aria-label", text);
+  const words = text.split(/\s+/).map((word) => {
+    const letters = [...word].map((ch) => {
+      const span = el("span", { className: "ch", textContent: ch });
+      span.setAttribute("aria-hidden", "true");
+      span.style.setProperty("--delay", `${(-Math.random()).toFixed(2)}s`);
+      span.style.setProperty("--dur", `${(0.25 + Math.random() * 0.2).toFixed(2)}s`);
+      return span;
+    });
+    return el("span", { className: "word" }, letters);
+  });
+  node.replaceChildren(...words.flatMap((w, i) => (i ? [" ", w] : [w])));
+}
+shakeLetters($("welcome"));
 
 let loaded = false;
 

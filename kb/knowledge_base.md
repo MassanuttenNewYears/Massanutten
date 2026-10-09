@@ -37,11 +37,11 @@ Last updated: 2026-10-09
 ## Accept / decline flow
 
 - Email has two links to `invite.html#e=<login email>&k=<key>&a=accept|decline` (fragment is stripped on load; never sent to servers).
-- Accept: sign in with the key, `accept_invite()` (clears `declined_at`), forced "Choose a password" form (min 2 chars client-side), `updateUser`, then `mark_first_sign_in()` (this is what triggers the rainbow name), then redirect home. Login alone no longer triggers the rainbow; saving a password on the home page does too (that is how John would light up).
+- Accept: sign in with the key, `accept_invite()` (clears `declined_at`), forced "Choose a password" form (min 6 chars client-side), `updateUser`, then `mark_first_sign_in()` (this is what triggers the rainbow name), then redirect home. Login alone no longer triggers the rainbow; saving a password on the home page does too (that is how John would light up).
 - Decline: sign in with the key, show a big ASCII frown with a confirm button (mail scanners opening the link can't decline by themselves); confirm calls `decline_invite()` (sets `people.declined_at`) and signs out. The page offers "Actually, I'm coming" (re-signs in from in-memory creds, `accept_invite()`, then the password step). Home page draws a red X (`.declined` CSS) through declined names.
 - Schema: `people.declined_at`; `decline_invite()` / `accept_invite()` are security definer, `authenticated` only, act on the caller's own row. Migration: `supabase/migrations/20261009_invite_responses.sql`.
 - Once a person sets a password their key stops working, so old invite links fail with "can't be used any more" (they use the normal login page).
-- **Password length:** the page asks for 2+ chars, but Supabase Auth enforces its own minimum (default 6) under Dashboard > Authentication > Sign In / Providers > Email. It must be lowered there, if the dashboard allows, or 2-char passwords will be rejected.
+- **Password length:** both password forms require 6-72 chars client-side. Supabase Auth enforces its own server-side minimum (default 6) under Dashboard > Authentication > Sign In / Providers > Email; keep it at 6 or higher (it can't be read or set via MCP, so confirm it in the dashboard).
 
 ## Invites
 
@@ -49,13 +49,23 @@ Last updated: 2026-10-09
 - `.env` (gitignored) was copied blind from secret-santa and had `SUPABASE_URL` and an empty `SUPABASE_SERVICE_ROLE_KEY` appended.
 - Config: `emails[slug]` for all 15 (8 prefilled from secret-santa, TK assumed = Teddy; 7 blank). Brian/Will kept commented. Switches: `DRY_RUN` (default True), `ONLY`, `SYNC_LOGIN_EMAILS` (calls `admin_set_login_email` with the service key, then links use the real email; keep True once anyone has been synced). John gets the plain login URL.
 
+## Security model (audited 2026-10-09)
+
+- **Database privileges:** `anon` has NO privileges on any public table or function. `authenticated` has SELECT only on `cars`, `car_passengers`, `itinerary_days`, and on `people` only the columns `id, display_name, group_label, sort_order, first_signed_in_at, declined_at` (`user_id` and `slug` are hidden; `select=*` on people is denied by design, so always list columns). `profiles`/`user_logs`: per-row RLS on `auth.uid()`, `authenticated` can UPDATE only `profiles.display_name`; no TRUNCATE/REFERENCES/TRIGGER anywhere. Default privileges for new public objects are revoked for API roles (new tables need explicit grants + policies).
+- **Functions:** `mark_first_sign_in`, `accept_invite`, `decline_invite` are `authenticated`-only and only touch the caller's own `people` row. `admin_set_login_email` is `service_role`-only. `rls_auto_enable` (event trigger) and `handle_new_user` (auth trigger) have no API execute rights (verified auto-RLS on new tables still works). Remaining advisor WARNs for the 3 caller-scoped RPCs are intentional.
+- **Front end:** no `innerHTML`/`eval`; all DB text rendered with `textContent`. Link params (`e`,`k`,`a`) are length-checked, only used as credentials, and `a` is whitelisted. Password inputs `maxlength=72`. Each page has a strict CSP meta (`script-src 'self'`, `connect-src 'self'` + the Supabase origin, no inline scripts, `form-action 'none'`, `base-uri 'none'`) and `no-referrer`. Pages hide themselves if framed (clickjacking; GitHub Pages cannot send headers).
+- **Supply chain:** supabase-js is vendored at `vendor/supabase-js-2.117.3.umd.js` (sha256 `d6a5c441...54a3`), no CDN code at runtime. To upgrade: `npm pack @supabase/supabase-js`, copy `dist/umd/supabase.js`, rename, update the 3 `<script>` tags.
+- **Cache busting:** GitHub Pages caches ~10 min; script/CSS URLs carry `?v=3` (and `supabaseClient.js?v=3` in imports). Bump the number in all HTML/JS files whenever JS/CSS changes, or visitors can get stale files that conflict with the CSP.
+- **Verified by live attack script (45 checks, all pass):** anon cannot read/write anything or call any RPC, sign-ups blocked (`signup_disabled`), admin API 401/403; a signed-in user cannot write trip data, read hidden columns, read/modify/delete/forge another user's rows, call admin or internal functions, or affect another person's decline state.
+- **Secrets:** repo and full git history contain no passwords, JWTs, or service keys; `.env`, `invite.py`, `invites.local.json`, and the PDF are gitignored and were never committed.
+
 ## Key design decisions
 
 - Plain static HTML, no bundler; supabase-js via `https://esm.sh`. Publishable key committed deliberately (public by design; RLS protects data).
 - Personal-link auth uses password sign-in with a per-person random key in the URL fragment (never sent to servers, stripped on load). Link carries the login email so switching to real emails needs no code change.
 - No registration UI; accounts are admin-provisioned.
 - Roster/trip content is data, not code. Group headings come from `group_label`.
-- No emoji anywhere in the UI. ASCII penguin kept in the hero (`<`/`>` escaped in `<pre>`).
+- No emoji anywhere in the UI. ASCII penguin kept in the hero (`<`/`>` escaped in `<pre>`); keep it mirror-symmetric when editing (23-char width, center column 11).
 - All paths relative for the `/Massanutten/` subpath.
 - MCP safety: before any write, confirm via `get_project_url` + a schema fingerprint. Use the plugin namespace with explicit `project_id`; `user-supabase` may still point at EquityHealthSys until MCP reloads.
 
@@ -69,6 +79,9 @@ Last updated: 2026-10-09
 
 ## Known limitations
 
+- **Password strength:** the minimum is 6 characters; short passwords are still guessable if someone knows a person's email, despite Supabase's rate limits. Consider a longer minimum or enabling leaked-password protection.
+- A signed-in user can change their OWN login email via the Auth API (`updateUser`); it only affects their own account. Leaked-password protection is off (Dashboard setting).
+- Signed-in users can see all roster names, who has signed in/declined, cars, and itinerary (by design). `profiles`/`user_logs` are unused by the UI and could be dropped.
 - **Manual step:** Auth Site URL / redirect URLs (Dashboard > Authentication > URL Configuration): Site URL `https://massanuttennewyears.github.io/Massanutten/`, redirect `https://massanuttennewyears.github.io/Massanutten/**`.
 - Personal links are bearer credentials; anyone with the link can sign in as that person until they set their own password (old key stops working after that) or the key is rotated.
 - John's name only lights up on his next sign-in (his earlier logins predate `mark_first_sign_in`).
@@ -81,6 +94,10 @@ Last updated: 2026-10-09
 
 ## Update log
 
+- 2026-10-09: Raised the minimum password length from 2 to 6 on the invite and home password forms (`minlength="6"`).
+- 2026-10-09: Security audit and hardening (see "Security model"). Migration `20261009_security_hardening.sql`: removed leftover anon/TRUNCATE privileges, column-level SELECT on `people`, locked internal functions, revoked default API privileges. Vendored supabase-js, added CSP + referrer + frame defenses, input length limits, cache-busting `?v=3`. Found and fixed: stale cached `supabaseClient.js` conflicting with the new CSP.
+
+- 2026-10-09: Home hero: replaced the explainer text with the headline "WELCOME TO JACK D. RELICHMAN'S 2026 SENDOFF 2027 JUMPSTART WEEKEND GETAWAY OF YOUR DREAMS !!!" (`#welcome`), split by `shakeLetters()` in `app.js` into per-letter spans with randomized shake duration/phase (words kept unbroken; static under reduced motion). Redrew the ASCII penguin to be mirror-symmetric around its center column (verified with a script; N/Y on the hat is the only non-mirrored text).
 - 2026-10-09: Accept/decline invitations. Added `invite.html`/`invite.js`, `people.declined_at`, `decline_invite()`/`accept_invite()`, red X on declined roster names, rainbow now triggered by setting a password, `invite.py` sends Accept/Decline HTML email (syntax-checked only, never run). `login.js` no longer marks first sign-in.
 - 2026-10-09: Removed non-roster passengers "Will Smuth" and "Brian" from `car_passengers`; cars now only list people in `people` (Car 4 is just Ben). Passenger names are still free text, so keep them matching `people.display_name`.
 - 2026-10-09: Renamed Car 2 passenger "Lilli" to "Lili" to match the roster.
