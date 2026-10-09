@@ -13,15 +13,20 @@ function setStatus(id, text, kind = "") {
 }
 
 function renderName(person) {
+  let name;
   if (!person.first_signed_in_at) {
-    return el("span", { className: "name pending", textContent: person.display_name });
+    name = el("span", { className: "name pending", textContent: person.display_name });
+  } else {
+    const letters = [...person.display_name].map((ch, i) => {
+      const span = el("span", { textContent: ch === " " ? "\u00a0" : ch });
+      span.style.setProperty("--i", i);
+      return span;
+    });
+    name = el("span", { className: "name active", ariaLabel: person.display_name }, letters);
   }
-  const letters = [...person.display_name].map((ch, i) => {
-    const span = el("span", { textContent: ch === " " ? "\u00a0" : ch });
-    span.style.setProperty("--i", i);
-    return span;
-  });
-  return el("span", { className: "name active", ariaLabel: person.display_name }, letters);
+  if (!person.declined_at) return name;
+  // Declined: red X through the name.
+  return el("span", { className: "declined", title: "Not coming" }, [name]);
 }
 
 function renderRoster(people) {
@@ -79,7 +84,7 @@ function renderItinerary(days) {
 
 async function loadAll() {
   const [people, cars, days] = await Promise.all([
-    supabase.from("people").select("display_name,group_label,sort_order,first_signed_in_at").order("id"),
+    supabase.from("people").select("display_name,group_label,sort_order,first_signed_in_at,declined_at").order("id"),
     supabase.from("cars").select("name,sort_order,car_passengers(name,sort_order)").order("sort_order"),
     supabase.from("itinerary_days").select("day_number,day_date,items").order("day_number"),
   ]);
@@ -112,7 +117,9 @@ $("password-form").addEventListener("submit", async (e) => {
   const { error } = await supabase.auth.updateUser({ password: $("new-password").value });
   if (error) return setStatus("password-status", error.message, "error");
   $("new-password").value = "";
+  await supabase.rpc("mark_first_sign_in");
   setStatus("password-status", "Password saved.", "ok");
+  loadAll();
 });
 
 supabase.auth.onAuthStateChange((event, session) => {

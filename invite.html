@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Your invitation | Massanutten New Year's</title>
+  <link rel="icon" href="./favicon.png">
+  <link rel="stylesheet" href="./styles.css">
+  <style>
+    body { display: grid; place-items: center; padding: 1rem; }
+    .card { width: min(460px, 94vw); padding: 2rem 1.75rem; text-align: center; }
+    .card h1 { margin: 0 0 .5rem; font-size: 1.6rem; }
+    .card h1 span { color: var(--ice); }
+    .sub { margin: 0 0 1.25rem; color: var(--ice-dim); }
+    .frown {
+      margin: 0 auto 1rem; font-family: monospace; font-size: 15px; line-height: 1.1;
+      color: var(--ice); text-align: left; display: inline-block; white-space: pre;
+    }
+    .actions { display: grid; gap: .75rem; margin-top: 1.25rem; }
+    form { text-align: left; }
+    form button { width: 100%; margin-top: 1.25rem; }
+    #status { margin-top: 1rem; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Massanutten <span>New Year's</span></h1>
+    <p class="sub" id="sub">Checking your invitation...</p>
+
+    <!-- Decline: confirm step -->
+    <section id="decline-step" hidden>
+<pre class="frown" aria-hidden="true">
+         .-"""""""""-.
+       .'             '.
+      /   ___     ___   \
+     |   / _ \   / _ \   |
+     |   \___/   \___/   |
+     |                   |
+     |       .-"""-.     |
+      \     /       \   /
+       '.  /         \ .'
+         '-'         '-'
+</pre>
+      <p>You won't be there? Confirm and a red X goes through your name on the roster.</p>
+      <div class="actions">
+        <button id="confirm-decline" type="button">Confirm: I can't make it</button>
+        <button id="switch-accept" class="ghost" type="button">Actually, I'm coming</button>
+      </div>
+    </section>
+
+    <!-- Decline: done -->
+    <section id="declined-step" hidden>
+      <p>Got it. You're marked as not coming. Changed your mind?</p>
+      <div class="actions">
+        <button id="undo-decline" type="button">Actually, I'm coming</button>
+      </div>
+    </section>
+
+    <!-- Accept: set password -->
+    <section id="accept-step" hidden>
+      <form id="password-form">
+        <label for="new-password">Choose a password</label>
+        <input id="new-password" type="password" minlength="2" autocomplete="new-password" required>
+        <button type="submit" id="save-password">Save and enter</button>
+      </form>
+    </section>
+
+    <p id="status" class="status" role="status"></p>
+  </main>
+
+  <script src="./snow.js"></script>
+  <script type="module" src="./invite.js"></script>
+</body>
+</html>

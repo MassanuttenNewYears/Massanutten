@@ -10,9 +10,8 @@ function setStatus(text, kind = "") {
 
 async function signIn(email, password) {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return error;
-  await supabase.rpc("mark_first_sign_in");
-  return null;
+  // The rainbow name is triggered by setting a password (invite.js / home page), not by login.
+  return error ?? null;
 }
 
 // Personal links look like login.html#e=<login email>&k=<key>. The fragment is never

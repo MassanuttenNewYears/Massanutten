@@ -55,6 +55,14 @@
       .name.active span { animation: rgb 6s linear infinite; animation-delay: calc(var(--i) * -0.3s); }
     }
 
+    .declined { position: relative; display: inline-block; padding: 0 .35rem; opacity: .85; }
+    .declined::before, .declined::after {
+      content: ""; position: absolute; left: -2px; right: -2px; top: 50%; height: 3px;
+      background: #ff3b3b; border-radius: 2px; box-shadow: 0 0 6px rgba(255, 59, 59, .7);
+    }
+    .declined::before { transform: translateY(-50%) rotate(14deg); }
+    .declined::after { transform: translateY(-50%) rotate(-14deg); }
+
     .cars { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; }
     .car { padding: 1rem; border-radius: 14px; background: rgba(7, 20, 40, 0.45); border: 1px solid var(--frost-border); }
     .car h3 { margin: 0 0 .6rem; font-size: 1rem; color: var(--ice); }
@@ -125,7 +133,7 @@
       <form class="password-form" id="password-form">
         <div>
           <label for="new-password">Set your own password (optional)</label>
-          <input id="new-password" type="password" minlength="8" autocomplete="new-password" required>
+          <input id="new-password" type="password" minlength="2" autocomplete="new-password" required>
         </div>
         <button type="submit">Save</button>
       </form>
