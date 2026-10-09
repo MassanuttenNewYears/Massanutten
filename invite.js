@@ -1,19 +1,20 @@
-import { supabase } from "./supabaseClient.js?v=3";
+import { supabase } from "./supabaseClient.js?v=4";
 
 const $ = (id) => document.getElementById(id);
 const show = (...ids) => {
-  for (const id of ["decline-step", "declined-step", "accept-step"]) $(id).hidden = !ids.includes(id);
+  for (const id of ["decline-step", "declined-step", "accept-step", "maybe-step"]) $(id).hidden = !ids.includes(id);
 };
 const setStatus = (text, kind = "") => {
   $("status").textContent = text;
   $("status").className = `status ${kind}`;
 };
 
-// Invite links look like invite.html#e=<login email>&k=<key>&a=accept|decline.
+// Invite links look like invite.html#e=<login email>&k=<key>&a=accept|decline|maybe.
 // The fragment is never sent to a server; remove it from the address bar right away.
 const params = new URLSearchParams(window.location.hash.slice(1));
 const creds = { email: params.get("e"), password: params.get("k") };
-const action = params.get("a") === "decline" ? "decline" : "accept";
+const requested = params.get("a");
+const action = ["decline", "maybe"].includes(requested) ? requested : "accept";
 history.replaceState(null, "", window.location.pathname + window.location.search);
 
 async function signIn() {
@@ -42,12 +43,24 @@ async function init() {
   if (action === "decline") {
     $("sub").textContent = "Sorry you can't make it.";
     show("decline-step");
+  } else if (action === "maybe") {
+    const { error: rpcError } = await supabase.rpc("maybe_invite");
+    if (rpcError) return setStatus(rpcError.message, "error");
+    $("sub").textContent = "Marked as maybe.";
+    show("maybe-step");
   } else {
     const { error: rpcError } = await supabase.rpc("accept_invite");
     if (rpcError) return setStatus(rpcError.message, "error");
     startAccept();
   }
 }
+
+$("maybe-accept").addEventListener("click", () => switchToAccept());
+$("maybe-decline").addEventListener("click", () => {
+  $("sub").textContent = "Sorry you can't make it.";
+  setStatus("");
+  show("decline-step");
+});
 
 $("confirm-decline").addEventListener("click", async () => {
   $("confirm-decline").disabled = true;

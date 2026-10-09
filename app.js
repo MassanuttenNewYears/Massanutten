@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient.js?v=3";
+import { supabase } from "./supabaseClient.js?v=4";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, props = {}, children = []) => {
@@ -14,7 +14,11 @@ function setStatus(id, text, kind = "") {
 
 function renderName(person) {
   let name;
-  if (!person.first_signed_in_at) {
+  if (person.maybe_at && !person.declined_at) {
+    // Maybe: only the first letter capitalized, whole name teeters back and forth.
+    const lower = person.display_name.toLowerCase();
+    name = el("span", { className: "name maybe", textContent: lower.charAt(0).toUpperCase() + lower.slice(1) });
+  } else if (!person.first_signed_in_at) {
     name = el("span", { className: "name pending", textContent: person.display_name });
   } else {
     const letters = [...person.display_name].map((ch, i) => {
@@ -53,6 +57,22 @@ function renderRoster(people) {
   );
 }
 
+// The key beside the roster. Uses made-up sample names so it never reveals real data.
+function renderLegend() {
+  const rows = [
+    [{ display_name: "name" }, "Hasn't answered yet"],
+    [{ display_name: "Name", first_signed_in_at: "x" }, "Coming!"],
+    [{ display_name: "Name", maybe_at: "x" }, "Maybe"],
+    [{ display_name: "Name", declined_at: "x" }, "Can't come"],
+  ];
+  $("legend-list").replaceChildren(
+    ...rows.map(([sample, meaning]) =>
+      el("li", {}, [el("span", { className: "legend-sample" }, [renderName(sample)]), el("span", { textContent: meaning })])
+    )
+  );
+}
+renderLegend();
+
 function renderCars(cars) {
   $("cars").replaceChildren(
     ...cars.map((car) =>
@@ -84,7 +104,7 @@ function renderItinerary(days) {
 
 async function loadAll() {
   const [people, cars, days] = await Promise.all([
-    supabase.from("people").select("display_name,group_label,sort_order,first_signed_in_at,declined_at").order("id"),
+    supabase.from("people").select("display_name,group_label,sort_order,first_signed_in_at,declined_at,maybe_at").order("id"),
     supabase.from("cars").select("name,sort_order,car_passengers(name,sort_order)").order("sort_order"),
     supabase.from("itinerary_days").select("day_number,day_date,items").order("day_number"),
   ]);

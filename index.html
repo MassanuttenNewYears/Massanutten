@@ -7,7 +7,7 @@
   <meta name="referrer" content="no-referrer">
   <title>Massanutten New Year's</title>
   <link rel="icon" href="./favicon.png">
-  <link rel="stylesheet" href="./styles.css?v=3">
+  <link rel="stylesheet" href="./styles.css?v=4">
   <style>
     .page { max-width: 980px; margin: 0 auto; padding: 1.5rem 1rem 4rem; display: grid; gap: 1.5rem; }
 
@@ -76,6 +76,30 @@
       .name.active span { animation: rgb 6s linear infinite; animation-delay: calc(var(--i) * -0.3s); }
     }
 
+    .name.maybe {
+      display: inline-block;
+      color: var(--ice);
+      font-weight: 600;
+      transform-origin: 50% 100%;
+      animation: teeter 1.8s ease-in-out infinite;
+    }
+    @keyframes teeter {
+      0%, 100% { transform: rotate(-9deg); }
+      50% { transform: rotate(9deg); }
+    }
+    @media (prefers-reduced-motion: reduce) { .name.maybe { animation: none; } }
+
+    .roster-wrap { display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap; }
+    .roster-wrap .roster-table { flex: 1 1 380px; min-width: 0; }
+    .legend {
+      flex: 0 0 250px; padding: 1rem; border-radius: 14px;
+      background: rgba(7, 20, 40, 0.45); border: 1px solid var(--frost-border);
+    }
+    .legend h3 { margin: 0 0 .75rem; font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ice-dim); }
+    .legend ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .85rem; }
+    .legend li { display: grid; grid-template-columns: 5.5rem 1fr; align-items: center; gap: .5rem; font-size: .9rem; color: var(--ice-dim); }
+    .legend-sample { display: inline-flex; align-items: center; min-height: 1.8rem; }
+
     .declined { position: relative; display: inline-block; padding: 0 .35rem; opacity: .85; }
     .declined::before, .declined::after {
       content: ""; position: absolute; left: -2px; right: -2px; top: 50%; height: 3px;
@@ -133,10 +157,16 @@
 
     <section class="card">
       <h2>Roster</h2>
-      <table class="roster-table">
-        <thead><tr id="roster-head"></tr></thead>
-        <tbody id="roster-body"></tbody>
-      </table>
+      <div class="roster-wrap">
+        <table class="roster-table">
+          <thead><tr id="roster-head"></tr></thead>
+          <tbody id="roster-body"></tbody>
+        </table>
+        <aside class="legend" aria-label="What the names mean">
+          <h3>Key</h3>
+          <ul id="legend-list"></ul>
+        </aside>
+      </div>
     </section>
 
     <section class="card">
@@ -164,8 +194,8 @@
     <p class="status" id="status" role="status"></p>
   </div>
 
-  <script src="./vendor/supabase-js-2.117.3.umd.js?v=3"></script>
-  <script src="./snow.js?v=3"></script>
-  <script type="module" src="./app.js?v=3"></script>
+  <script src="./vendor/supabase-js-2.117.3.umd.js?v=4"></script>
+  <script src="./snow.js?v=4"></script>
+  <script type="module" src="./app.js?v=4"></script>
 </body>
 </html>
