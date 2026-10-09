@@ -34,9 +34,18 @@ Last updated: 2026-10-09
 - Accounts: John (`REDACTED_EMAIL`) is his real account, linked to `people.john`. The other 14 have placeholder logins `<slug>@guest.massanutten.invalid` whose password is a random key. Keys live only in gitignored `invites.local.json` (slug -> key); only bcrypt hashes (via local `htpasswd`) were sent to the database.
 - Verified 2026-10-09: key login works; RPC flips `first_signed_in_at`; anon gets 401 on tables and admin RPC; authenticated gets 403 on admin RPC and on writes. Test state reset afterwards (0 activated).
 
+## Accept / decline flow
+
+- Email has two links to `invite.html#e=<login email>&k=<key>&a=accept|decline` (fragment is stripped on load; never sent to servers).
+- Accept: sign in with the key, `accept_invite()` (clears `declined_at`), forced "Choose a password" form (min 2 chars client-side), `updateUser`, then `mark_first_sign_in()` (this is what triggers the rainbow name), then redirect home. Login alone no longer triggers the rainbow; saving a password on the home page does too (that is how John would light up).
+- Decline: sign in with the key, show a big ASCII frown with a confirm button (mail scanners opening the link can't decline by themselves); confirm calls `decline_invite()` (sets `people.declined_at`) and signs out. The page offers "Actually, I'm coming" (re-signs in from in-memory creds, `accept_invite()`, then the password step). Home page draws a red X (`.declined` CSS) through declined names.
+- Schema: `people.declined_at`; `decline_invite()` / `accept_invite()` are security definer, `authenticated` only, act on the caller's own row. Migration: `supabase/migrations/20261009_invite_responses.sql`.
+- Once a person sets a password their key stops working, so old invite links fail with "can't be used any more" (they use the normal login page).
+- **Password length:** the page asks for 2+ chars, but Supabase Auth enforces its own minimum (default 6) under Dashboard > Authentication > Sign In / Providers > Email. It must be lowered there, if the dashboard allows, or 2-char passwords will be rejected.
+
 ## Invites
 
-- `invite.py` (gitignored, untested by design; John tests/edits). Modeled on `../secret-santa/secret_santa.py` (same `load_env`, Gmail SMTP 587, `smtp_username`/`smtp_password`).
+- `invite.py` (gitignored, untested by design; John tests/edits). Sends a multipart (plain + HTML) email with Accept and Decline buttons; John is exempt (`SKIP_INVITE`); `ALREADY_SYNCED = {"jack"}` makes his link use his real login email. Modeled on `../secret-santa/secret_santa.py` (same `load_env`, Gmail SMTP 587, `smtp_username`/`smtp_password`).
 - `.env` (gitignored) was copied blind from secret-santa and had `SUPABASE_URL` and an empty `SUPABASE_SERVICE_ROLE_KEY` appended.
 - Config: `emails[slug]` for all 15 (8 prefilled from secret-santa, TK assumed = Teddy; 7 blank). Brian/Will kept commented. Switches: `DRY_RUN` (default True), `ONLY`, `SYNC_LOGIN_EMAILS` (calls `admin_set_login_email` with the service key, then links use the real email; keep True once anyone has been synced). John gets the plain login URL.
 
@@ -72,6 +81,8 @@ Last updated: 2026-10-09
 
 ## Update log
 
+- 2026-10-09: Accept/decline invitations. Added `invite.html`/`invite.js`, `people.declined_at`, `decline_invite()`/`accept_invite()`, red X on declined roster names, rainbow now triggered by setting a password, `invite.py` sends Accept/Decline HTML email (syntax-checked only, never run). `login.js` no longer marks first sign-in.
+- 2026-10-09: Removed non-roster passengers "Will Smuth" and "Brian" from `car_passengers`; cars now only list people in `people` (Car 4 is just Ben). Passenger names are still free text, so keep them matching `people.display_name`.
 - 2026-10-09: Renamed Car 2 passenger "Lilli" to "Lili" to match the roster.
 - 2026-10-09: Roster, personal sign-in links, trip data, invites. Added `people`/`cars`/`car_passengers`/`itinerary_days` (read-only to signed-in users), `mark_first_sign_in` and `admin_set_login_email`; seeded from the PDF; created 14 placeholder accounts from locally generated keys (`invites.local.json`). New shared `styles.css` and pixelated `snow.js` on all pages; login handles `#e=&k=` links; home rebuilt with animated rainbow roster names, cars, itinerary, set-password form. Added gitignored `invite.py` + blind-copied `.env`; `.gitignore` covers `.env`, `invite.py`, `invites.local.json`, `*.local.sql`, `*.pdf`.
 - 2026-10-09: Added winter-themed `login.html`/`login.js`; created first user `REDACTED_EMAIL`.
