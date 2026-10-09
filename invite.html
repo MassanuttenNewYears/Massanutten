@@ -7,7 +7,7 @@
   <meta name="referrer" content="no-referrer">
   <title>Your invitation | Massanutten New Year's</title>
   <link rel="icon" href="./favicon.png">
-  <link rel="stylesheet" href="./styles.css?v=3">
+  <link rel="stylesheet" href="./styles.css?v=4">
   <style>
     body { display: grid; place-items: center; padding: 1rem; }
     .card { width: min(460px, 94vw); padding: 2rem 1.75rem; text-align: center; }
@@ -59,6 +59,15 @@
       </div>
     </section>
 
+    <!-- Maybe -->
+    <section id="maybe-step" hidden>
+      <p>No problem. Your name will teeter on the roster until you decide. You can use the buttons in your invitation email again any time.</p>
+      <div class="actions">
+        <button id="maybe-accept" type="button">I'm in</button>
+        <button id="maybe-decline" class="ghost" type="button">I can't make it</button>
+      </div>
+    </section>
+
     <!-- Accept: set password -->
     <section id="accept-step" hidden>
       <form id="password-form">
@@ -71,8 +80,8 @@
     <p id="status" class="status" role="status"></p>
   </main>
 
-  <script src="./vendor/supabase-js-2.117.3.umd.js?v=3"></script>
-  <script src="./snow.js?v=3"></script>
-  <script type="module" src="./invite.js?v=3"></script>
+  <script src="./vendor/supabase-js-2.117.3.umd.js?v=4"></script>
+  <script src="./snow.js?v=4"></script>
+  <script type="module" src="./invite.js?v=4"></script>
 </body>
 </html>

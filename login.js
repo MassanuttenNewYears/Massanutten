@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient.js?v=3";
+import { supabase } from "./supabaseClient.js?v=4";
 
 const $ = (id) => document.getElementById(id);
 const goHome = () => window.location.replace("./");
