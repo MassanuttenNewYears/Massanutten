@@ -1,0 +1,6 @@
+.env
+invite.py
+invites.local.json
+*.local.sql
+*.pdf
+.DS_Store
