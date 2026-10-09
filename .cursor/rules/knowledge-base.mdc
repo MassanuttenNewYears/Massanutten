@@ -1,0 +1,25 @@
+---
+description: Mandatory knowledge base read/update workflow
+alwaysApply: true
+---
+
+# Knowledge Base Workflow (mandatory)
+
+This repo maintains a living knowledge base at `kb/knowledge_base.md`.
+
+## Before making ANY change
+
+- Read `kb/knowledge_base.md` first. It documents the architecture, module
+  responsibilities, key design decisions, and known limitations. Do not
+  re-derive or contradict decisions recorded there without flagging it.
+
+## After making ANY change
+
+- Update `kb/knowledge_base.md` to reflect the change:
+  - Amend the affected sections (architecture, design decisions, shortcuts,
+    limitations) so the doc stays accurate.
+  - Add a dated entry to the "Update log" section summarizing what changed
+    and why.
+  - Refresh the "Last updated" line at the top.
+
+A change is not complete until the knowledge base is updated.
