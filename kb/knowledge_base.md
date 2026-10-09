@@ -4,32 +4,35 @@ Last updated: 2026-10-09
 
 ## Overview
 
-The repository (`massanutten`) is currently empty: no source files, no git history, no build config. Nothing about the project's purpose or how to run it could be determined from the code.
+`massanutten` is a static GitHub Pages site for the org `MassanuttenNewYears` (remote: `https://github.com/MassanuttenNewYears/Massanutten.git`, branch `main`). Currently a single page showing an ASCII penguin wearing a hat marked "NY".
 
-- **Purpose:** _TBD – fill in when the project is scaffolded._
-- **How to run:** _TBD._
+- **How to run:** open `index.html` in a browser. No build step. Deploy via GitHub Pages (Settings > Pages > `main` branch, root). Expected URL: `https://massanuttennewyears.github.io/Massanutten/`.
 
 ## Architecture
 
-_No modules or files exist yet._ Document each module/file and its responsibility here as they are added.
+- `index.html`: the whole site. Inline CSS, ASCII art inside a `<pre>`, and an `<h1>`.
+- `.cursor/rules/knowledge-base.mdc`: always-applied rule enforcing the KB workflow.
+- `kb/knowledge_base.md`: this file.
 
 ## Key design decisions
 
-_None recorded yet._ When adding code, record what was chosen and why, especially:
-- File formats and data models
-- Coordinate spaces and units
-- Semantics that are easy to get wrong
+- Plain static HTML, no framework or build tooling, so GitHub Pages serves it as-is.
+- ASCII art lives in a `<pre>`; `<` and `>` must be written as `&lt;` / `&gt;` there. Uses monospace font; the `◉` eye characters require UTF-8 (`<meta charset>` is set).
+- Remote uses HTTPS (via `gh auth login`) because SSH key auth failed.
 
 ## Shortcuts / conventions
 
-- **User-facing controls:** _None yet._
-- **Code conventions:** _None yet._
-- **Process:** All changes must follow the KB workflow in `.cursor/rules/knowledge-base.mdc` (read this file before changes; update it after).
+- **User-facing controls:** none.
+- **Code conventions:** keep the site dependency-free; inline styles for now.
+- **Process:** all changes follow the KB workflow in `.cursor/rules/knowledge-base.mdc`.
 
 ## Known limitations
 
-- The KB itself is a placeholder because the repo had no code when it was created.
+- Penguin ASCII art is rough and not visually verified in a browser.
+- Initial commit may not be pushed yet (earlier push failed because there were no commits).
+- Unconfirmed whether Pages is enabled in the repo settings.
 
 ## Update log
 
+- 2026-10-09: Added `index.html` with ASCII penguin wearing an "NY" hat as the initial Pages site; documented git remote/Pages setup.
 - 2026-10-09: Initial KB created (repo was empty; sections are placeholders, plus the always-applied KB rule in `.cursor/rules/knowledge-base.mdc`).
