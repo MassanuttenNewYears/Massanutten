@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://vxevjynsfzemnzqxcfgt.supabase.co; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
   <title>Log in | Massanutten New Year's</title>
   <link rel="icon" href="./favicon.png">
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles.css?v=3">
   <style>
     body { display: grid; place-items: center; overflow: hidden; }
     .mountains {
@@ -30,15 +32,16 @@
     <p class="sub" id="sub">Sign in to warm up.</p>
     <form id="login-form">
       <label for="email">Email</label>
-      <input id="email" type="email" autocomplete="email" required>
+      <input id="email" type="email" maxlength="254" autocomplete="email" required>
       <label for="password">Password</label>
-      <input id="password" type="password" autocomplete="current-password" required>
+      <input id="password" type="password" maxlength="72" autocomplete="current-password" required>
       <button id="submit" type="submit">Log in</button>
     </form>
     <p id="status" class="status" role="status"></p>
   </main>
 
-  <script src="./snow.js"></script>
-  <script type="module" src="./login.js"></script>
+  <script src="./vendor/supabase-js-2.117.3.umd.js?v=3"></script>
+  <script src="./snow.js?v=3"></script>
+  <script type="module" src="./login.js?v=3"></script>
 </body>
 </html>

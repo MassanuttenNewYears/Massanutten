@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient.js";
+import { supabase } from "./supabaseClient.js?v=3";
 
 const $ = (id) => document.getElementById(id);
 const goHome = () => window.location.replace("./");
@@ -23,7 +23,8 @@ function readPersonalLink() {
   if (window.location.hash) {
     history.replaceState(null, "", window.location.pathname + window.location.search);
   }
-  return email && key ? { email, key } : null;
+  const valid = email && key && email.length <= 254 && key.length <= 72 && email.includes("@");
+  return valid ? { email, key } : null;
 }
 
 async function init() {

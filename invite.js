@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient.js";
+import { supabase } from "./supabaseClient.js?v=3";
 
 const $ = (id) => document.getElementById(id);
 const show = (...ids) => {
@@ -28,7 +28,8 @@ function startAccept() {
 }
 
 async function init() {
-  if (!creds.email || !creds.password) {
+  const ok = creds.email && creds.password && creds.email.length <= 254 && creds.password.length <= 72;
+  if (!ok) {
     $("sub").textContent = "This invitation link is incomplete.";
     return setStatus("Use the buttons in your invitation email.", "error");
   }
