@@ -1,4 +1,4 @@
-import { supabase, sessionExpired, endSession } from "./supabaseClient.js?v=9";
+import { supabase, sessionExpired, endSession } from "./supabaseClient.js?v=10";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, props = {}, children = []) => {
@@ -222,10 +222,19 @@ async function decryptText(b64) {
   try {
     const bytes = fromB64(b64);
     const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: bytes.slice(0, 12) }, await getBringKey(), bytes.slice(12));
-    return dec.decode(pt);
+    return cleanItemText(dec.decode(pt));
   } catch {
     return "(could not decrypt)";
   }
+}
+
+// Clean user text before encrypting and again before showing it (entries can also arrive via direct
+// API calls): drop control/format characters (incl. bidi overrides, zero-width), collapse whitespace, cap length.
+const MAX_ITEM_CHARS = 200;
+function cleanItemText(text) {
+  return [...String(text).normalize("NFC").replace(/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/gu, " ").replace(/\s+/g, " ").trim()]
+    .slice(0, MAX_ITEM_CHARS)
+    .join("");
 }
 
 function resetBringForm() {
@@ -278,8 +287,8 @@ $("bring-cancel").addEventListener("click", resetBringForm);
 
 $("bring-form").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const text = $("bring-input").value.trim();
-  if (!text) return;
+  const text = cleanItemText($("bring-input").value);
+  if (!text) return setStatus("bring-status", "Please enter some text.", "error");
   $("bring-submit").disabled = true;
   setStatus("bring-status", "");
   try {
