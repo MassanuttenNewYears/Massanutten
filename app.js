@@ -1,4 +1,4 @@
-import { supabase, sessionExpired, endSession } from "./supabaseClient.js?v=7";
+import { supabase, sessionExpired, endSession } from "./supabaseClient.js?v=9";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, props = {}, children = []) => {
@@ -6,6 +6,52 @@ const el = (tag, props = {}, children = []) => {
   node.append(...children);
   return node;
 };
+
+// ---- Identity badges. Only people who RSVPed yes (signed in/set a password, not declined, not maybe)
+// get one. Ranked oldest-first by first_signed_in_at (order of RSVPing yes): rank 0 = triangle +
+// Maize & Blue, rank 1 = square + Scarlet/Gray/White, rank 2 = pentagon + Maize & Blue ...
+// shape = 3 + rank % 7 (triangle to nonagon), color = rank % 2. Existing ranks never change
+// unless someone switches to maybe/no.
+const SHAPE_NAMES = ["Triangle", "Square", "Pentagon", "Hexagon", "Heptagon", "Octagon", "Nonagon"];
+const SVG_NS = "http://www.w3.org/2000/svg";
+let identities = new Map(); // display_name -> { rank }
+
+function computeIdentities(people) {
+  const yes = people
+    .filter((p) => p.first_signed_in_at && !p.declined_at && !p.maybe_at)
+    .sort((a, b) => new Date(a.first_signed_in_at) - new Date(b.first_signed_in_at));
+  identities = new Map(yes.map((p, rank) => [p.display_name, { rank }]));
+}
+
+function svgEl(tag, attrs) {
+  const node = document.createElementNS(SVG_NS, tag);
+  for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+  return node;
+}
+
+function shapeBadge(name) {
+  const id = identities.get(name);
+  if (!id) return el("span", { className: "shape-none", textContent: "-", title: "No RSVP yes yet" });
+  const sides = 3 + (id.rank % 7);
+  const maizeBlue = id.rank % 2 === 0;
+  const points = Array.from({ length: sides }, (_, i) => {
+    const a = -Math.PI / 2 + (i * 2 * Math.PI) / sides; // first vertex points up
+    return `${(12 + 9.5 * Math.cos(a)).toFixed(2)},${(12 + 9.5 * Math.sin(a)).toFixed(2)}`;
+  }).join(" ");
+  const svg = svgEl("svg", { viewBox: "0 0 24 24", class: "shape", role: "img" });
+  svg.setAttribute("aria-label", `${SHAPE_NAMES[sides - 3]}, ${maizeBlue ? "maize and blue" : "scarlet, gray and white"}`);
+  if (maizeBlue) {
+    svg.append(svgEl("polygon", { points, fill: "#FFCB05", stroke: "#00274C", "stroke-width": 2.4, "stroke-linejoin": "round" }));
+  } else {
+    // gray outline, scarlet fill, white inner stroke
+    svg.append(svgEl("polygon", { points, fill: "#BB0000", stroke: "#8a8d8f", "stroke-width": 3.4, "stroke-linejoin": "round" }));
+    svg.append(svgEl("polygon", { points, fill: "#BB0000", stroke: "#ffffff", "stroke-width": 1.2, "stroke-linejoin": "round" }));
+  }
+  const title = svgEl("title", {});
+  title.textContent = svg.getAttribute("aria-label");
+  svg.append(title);
+  return svg;
+}
 
 function setStatus(id, text, kind = "") {
   $(id).textContent = text;
@@ -28,7 +74,12 @@ function renderName(person) {
     });
     name = el("span", { className: "name active", ariaLabel: person.display_name }, letters);
   }
-  if (!person.declined_at) return name;
+  if (!person.declined_at) {
+    // RSVP-yes people get their shape badge next to the name (legend samples have no identity).
+    return identities.has(person.display_name)
+      ? el("span", { className: "name-wrap" }, [shapeBadge(person.display_name), name])
+      : name;
+  }
   // Declined: red X through the name.
   return el("span", { className: "declined", title: "Not coming" }, [name]);
 }
@@ -110,10 +161,10 @@ async function loadAll() {
   ]);
   const error = people.error || cars.error || days.error;
   if (error) return setStatus("status", error.message, "error");
+  computeIdentities(people.data);
   renderRoster(people.data);
   renderCars(cars.data);
   renderItinerary(days.data);
-  computeIdentities(people.data);
   loadBring(); // after identities so badges are right
 }
 
@@ -175,51 +226,6 @@ async function decryptText(b64) {
   } catch {
     return "(could not decrypt)";
   }
-}
-
-// ---- Identity badges. Only people who RSVPed yes (signed in/set a password, not declined, not maybe)
-// get one. Ranked newest-first by first_signed_in_at: rank 0 = triangle + Maize & Blue,
-// rank 1 = square + Scarlet/Gray/White, rank 2 = pentagon + Maize & Blue ... shape = 3 + rank % 7
-// (triangle to nonagon), color = rank % 2. Ranks shift as more people RSVP yes.
-const SHAPE_NAMES = ["Triangle", "Square", "Pentagon", "Hexagon", "Heptagon", "Octagon", "Nonagon"];
-const SVG_NS = "http://www.w3.org/2000/svg";
-let identities = new Map(); // display_name -> { rank }
-
-function computeIdentities(people) {
-  const yes = people
-    .filter((p) => p.first_signed_in_at && !p.declined_at && !p.maybe_at)
-    .sort((a, b) => new Date(b.first_signed_in_at) - new Date(a.first_signed_in_at));
-  identities = new Map(yes.map((p, rank) => [p.display_name, { rank }]));
-}
-
-function svgEl(tag, attrs) {
-  const node = document.createElementNS(SVG_NS, tag);
-  for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
-  return node;
-}
-
-function shapeBadge(name) {
-  const id = identities.get(name);
-  if (!id) return el("span", { className: "shape-none", textContent: "-", title: "No RSVP yes yet" });
-  const sides = 3 + (id.rank % 7);
-  const maizeBlue = id.rank % 2 === 0;
-  const points = Array.from({ length: sides }, (_, i) => {
-    const a = -Math.PI / 2 + (i * 2 * Math.PI) / sides; // first vertex points up
-    return `${(12 + 9.5 * Math.cos(a)).toFixed(2)},${(12 + 9.5 * Math.sin(a)).toFixed(2)}`;
-  }).join(" ");
-  const svg = svgEl("svg", { viewBox: "0 0 24 24", class: "shape", role: "img" });
-  svg.setAttribute("aria-label", `${SHAPE_NAMES[sides - 3]}, ${maizeBlue ? "maize and blue" : "scarlet, gray and white"}`);
-  if (maizeBlue) {
-    svg.append(svgEl("polygon", { points, fill: "#FFCB05", stroke: "#00274C", "stroke-width": 2.4, "stroke-linejoin": "round" }));
-  } else {
-    // gray outline, scarlet fill, white inner stroke
-    svg.append(svgEl("polygon", { points, fill: "#BB0000", stroke: "#8a8d8f", "stroke-width": 3.4, "stroke-linejoin": "round" }));
-    svg.append(svgEl("polygon", { points, fill: "#BB0000", stroke: "#ffffff", "stroke-width": 1.2, "stroke-linejoin": "round" }));
-  }
-  const title = svgEl("title", {});
-  title.textContent = svg.getAttribute("aria-label");
-  svg.append(title);
-  return svg;
 }
 
 function resetBringForm() {
