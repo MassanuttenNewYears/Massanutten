@@ -7,7 +7,7 @@
   <meta name="referrer" content="no-referrer">
   <title>Massanutten New Year's</title>
   <link rel="icon" href="./favicon.png">
-  <link rel="stylesheet" href="./styles.css?v=7">
+  <link rel="stylesheet" href="./styles.css?v=9">
   <style>
     .page { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 4rem; display: grid; gap: 1.5rem; }
 
@@ -101,7 +101,8 @@
     .bring-table td { padding: .4rem .35rem; vertical-align: middle; border-bottom: 1px solid rgba(255, 255, 255, 0.06); overflow-wrap: anywhere; }
     .bring-table .who-name { color: var(--ice); font-weight: 600; }
     .bring-table .empty { color: var(--muted); font-style: italic; }
-    .bring-table .shape { display: block; width: 24px; height: 24px; }
+    .shape { display: block; width: 22px; height: 22px; flex: none; }
+    .name-wrap { display: inline-flex; align-items: center; gap: .45rem; }
     .bring-table .row-actions { display: flex; gap: .3rem; white-space: nowrap; }
     .bring-table button { padding: .2rem .5rem; font-size: .75rem; }
     .bring-form .bring-buttons { display: flex; gap: .5rem; margin-top: .6rem; }
@@ -143,6 +144,8 @@
 </head>
 <body>
   <div class="page" id="app" hidden>
+    <div class="layout">
+    <div class="main-col">
     <header class="top">
       <h1>Massanutten <span>New Year's</span></h1>
       <div class="who">Signed in as <strong id="who"></strong> <button id="logout" class="ghost" type="button">Log out</button></div>
@@ -171,8 +174,6 @@
       <h2 class="welcome" id="welcome">WELCOME TO JACK D. RELICHMAN'S 2026 SENDOFF 2027 JUMPSTART WEEKEND GETAWAY OF YOUR DREAMS !!!</h2>
     </section>
 
-    <div class="layout">
-    <div class="main-col">
     <section class="card">
       <h2>Roster</h2>
       <div class="roster-wrap">
@@ -232,8 +233,8 @@
     <p class="status" id="status" role="status"></p>
   </div>
 
-  <script src="./vendor/supabase-js-2.117.3.umd.js?v=7"></script>
-  <script src="./snow.js?v=7"></script>
-  <script type="module" src="./app.js?v=7"></script>
+  <script src="./vendor/supabase-js-2.117.3.umd.js?v=9"></script>
+  <script src="./snow.js?v=9"></script>
+  <script type="module" src="./app.js?v=9"></script>
 </body>
 </html>
