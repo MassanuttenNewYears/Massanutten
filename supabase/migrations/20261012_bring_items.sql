@@ -9,7 +9,8 @@ alter table public.app_secrets enable row level security;
 revoke all on public.app_secrets from anon, authenticated;
 
 insert into public.app_secrets (name, value) values
-  ('bring_passphrase', 'REDACTED'),
+  -- Placeholder only: the real passphrase is set directly in the database and must never be committed.
+  ('bring_passphrase', 'SET_IN_DATABASE'),
   ('bring_salt', replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', ''))
 on conflict (name) do nothing;
 
