@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient.js?v=4";
+import { supabase, signIn as rawSignIn, sessionExpired, endSession } from "./supabaseClient.js?v=7";
 
 const $ = (id) => document.getElementById(id);
 const goHome = () => window.location.replace("./");
@@ -9,7 +9,7 @@ function setStatus(text, kind = "") {
 }
 
 async function signIn(email, password) {
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await rawSignIn({ email, password });
   // The rainbow name is triggered by setting a password (invite.js / home page), not by login.
   return error ?? null;
 }
@@ -41,7 +41,10 @@ async function init() {
   }
 
   const { data } = await supabase.auth.getSession();
-  if (data.session) goHome();
+  if (!data.session) return;
+  // Only skip the form for a valid, recent session; otherwise force a fresh sign-in.
+  if (sessionExpired()) return endSession();
+  goHome();
 }
 
 $("login-form").addEventListener("submit", async (e) => {
