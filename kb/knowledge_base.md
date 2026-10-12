@@ -1,4 +1,4 @@
-Last updated: 2026-10-09
+Last updated: 2026-10-12 (Bringing list identity badges)
 
 # Knowledge Base
 
@@ -13,8 +13,9 @@ Last updated: 2026-10-09
 - `styles.css`: shared winter theme (night gradient, frosted `.card`, inputs/buttons, `.status`).
 - `snow.js`: classic script on every page. Injects a fixed canvas drawn at 1/4 resolution, scaled with `image-rendering: pixelated` (square flakes, 3 depth layers, sine drift). Pauses when the tab is hidden; static under `prefers-reduced-motion`.
 - `login.html` + `login.js`: login. Personal links `login.html#e=<login email>&k=<key>` are read from the fragment, the fragment is removed with `history.replaceState`, then `signInWithPassword` + `rpc('mark_first_sign_in')`, then redirect to `./`. Manual email/password form also calls the RPC. Bad link shows an error.
-- `index.html` + `app.js`: home. Redirects to `./login.html` without a session. Renders roster table (one column per `group_label`, groups in `people.id` order, rows by `sort_order`), car cards, itinerary day cards, and a "Set your own password" form (`auth.updateUser`). Placeholder logins show as the slug in the header.
-- `supabaseClient.js`: single `createClient` (URL + publishable key, localStorage session) and `SITE_URL`.
+- `index.html` + `app.js`: home. `#app` stays hidden until `guard()` passes (session exists, younger than 8h, and `auth.getUser()` confirms it with the server); otherwise redirects to `./login.html`. Renders roster table (one column per `group_label`, groups in `people.id` order, rows by `sort_order`), car cards, itinerary day cards, and a "Set your own password" form (`auth.updateUser`). Placeholder logins show as the slug in the header.
+- **Bringing list** (right of the roster, `#bring-list`/`#bring-form` in `index.html`, logic in `app.js`): signed-in users add/edit/delete their own entries; everyone sees all. See "Bringing list" below.
+- `supabaseClient.js`: single `createClient` (URL + publishable key, **sessionStorage** session), `SITE_URL`, and the forced re-login helpers `signIn` (stamps sign-in time), `sessionExpired`, `endSession`, `MAX_SESSION_MS` (8h).
 - `supabase/migrations/*.sql`: idempotent copies of schema migrations applied via MCP (no secrets; account creation SQL is intentionally not saved).
 - `invite.py` (gitignored): local invite mailer, see "Invites".
 - `.cursor/mcp.json`: routes the `supabase` MCP server to this project (overrides global).
@@ -33,6 +34,15 @@ Last updated: 2026-10-09
   - `admin_set_login_email(p_slug, p_email)`: security definer, `service_role` only. Switches the person's Auth login email (users + identities, confirmed). Idempotent; errors on unknown slug or email taken. Run manually: `select public.admin_set_login_email('jack', 'real@example.com');`
 - Accounts: John (`REDACTED_EMAIL`) is his real account, linked to `people.john`. The other 14 have placeholder logins `<slug>@guest.massanutten.invalid` whose password is a random key. Keys live only in gitignored `invites.local.json` (slug -> key); only bcrypt hashes (via local `htpasswd`) were sent to the database.
 - Verified 2026-10-09: key login works; RPC flips `first_signed_in_at`; anon gets 401 on tables and admin RPC; authenticated gets 403 on admin RPC and on writes. Test state reset afterwards (0 activated).
+
+## Bringing list
+
+- Why not a SHA-256 hash: a hash is one-way and cannot be "unhashed" for display. Instead entries are encrypted client-side with AES-256-GCM (key = PBKDF2-SHA256, 200k iterations, from passphrase `REDACTED` + a random 64-hex salt); stored value is base64(iv + ciphertext). The DB never sees plaintext.
+- Tables (no API privileges at all; access only through security definer RPCs): `app_secrets` (`bring_passphrase`, `bring_salt`) and `bring_items` (person_id -> people, ciphertext <= 4000 chars). RPCs, all `authenticated`-only: `get_bring_secret()` (returns passphrase + salt), `list_bring_items()` (id, person_name, ciphertext, created_at, mine), `add_bring_item(cipher)` (max 50 per person, needs a linked roster row), `update_bring_item(id, cipher)` / `delete_bring_item(id)` (own rows only). Migration: `supabase/migrations/20261012_bring_items.sql` (salt is generated when first applied; do not re-seed or old entries become unreadable).
+- Threat model: outsiders (anon) cannot read ciphertext or the key. Any signed-in user can fetch the key (needed to decrypt), and anyone with DB/dashboard access can too, so this is obfuscation-at-rest, not secrecy from members. `REDACTED` is a weak passphrase, mitigated only by the salt and by the key being sign-in-gated. Rotating the passphrase/salt requires re-encrypting all rows.
+- **Layout:** the Bringing card is a separate right-hand column (`.layout` > `.main-col` + `aside.bring`) that is `position: sticky` so it follows the scroll (static on screens < 900px). Entries render as a table: Shape, Name, Item, actions.
+- **Identity badges** (client-side only, computed in `computeIdentities()` from the `people` columns already fetched; no DB change): only people who RSVPed yes (`first_signed_in_at` set, not declined, not maybe) get one. They are ranked newest-first by `first_signed_in_at`; rank 0 = triangle, shape = 3 + rank % 7 (triangle..nonagon, 7 shapes), color = rank % 2 (even = Maize & Blue `#FFCB05`/`#00274C`, odd = Scarlet/Gray/White `#BB0000`/`#8a8d8f`/white). Consequence: badges shift whenever someone new RSVPs yes or someone changes to maybe/no. People without a yes show "-". Matching of entries to people is by `display_name`.
+- Verified via a rolled-back SQL test (add/list/update/delete/get secret as John). Not browser-tested.
 
 ## Accept / decline flow
 
@@ -56,7 +66,7 @@ Last updated: 2026-10-09
 - **Functions:** `mark_first_sign_in`, `accept_invite`, `decline_invite` are `authenticated`-only and only touch the caller's own `people` row. `admin_set_login_email` is `service_role`-only. `rls_auto_enable` (event trigger) and `handle_new_user` (auth trigger) have no API execute rights (verified auto-RLS on new tables still works). Remaining advisor WARNs for the 3 caller-scoped RPCs are intentional.
 - **Front end:** no `innerHTML`/`eval`; all DB text rendered with `textContent`. Link params (`e`,`k`,`a`) are length-checked, only used as credentials, and `a` is whitelisted. Password inputs `maxlength=72`. Each page has a strict CSP meta (`script-src 'self'`, `connect-src 'self'` + the Supabase origin, no inline scripts, `form-action 'none'`, `base-uri 'none'`) and `no-referrer`. Pages hide themselves if framed (clickjacking; GitHub Pages cannot send headers).
 - **Supply chain:** supabase-js is vendored at `vendor/supabase-js-2.117.3.umd.js` (sha256 `d6a5c441...54a3`), no CDN code at runtime. To upgrade: `npm pack @supabase/supabase-js`, copy `dist/umd/supabase.js`, rename, update the 3 `<script>` tags.
-- **Cache busting:** GitHub Pages caches ~10 min; script/CSS URLs carry `?v=4` (and `supabaseClient.js?v=4` in imports). Bump the number in all HTML/JS files whenever JS/CSS changes, or visitors can get stale files that conflict with the CSP.
+- **Cache busting:** GitHub Pages caches ~10 min; script/CSS URLs carry `?v=7` (and `supabaseClient.js?v=7` in imports). Bump the number in all HTML/JS files whenever JS/CSS changes, or visitors can get stale files that conflict with the CSP.
 - **Verified by live attack script (45 checks, all pass):** anon cannot read/write anything or call any RPC, sign-ups blocked (`signup_disabled`), admin API 401/403; a signed-in user cannot write trip data, read hidden columns, read/modify/delete/forge another user's rows, call admin or internal functions, or affect another person's decline state.
 - **Secrets:** repo and full git history contain no passwords, JWTs, or service keys; `.env`, `invite.py`, `invites.local.json`, and the PDF are gitignored and were never committed.
 
@@ -90,11 +100,15 @@ Last updated: 2026-10-09
 - If `invites.local.json` is lost, keys cannot be recovered; rotate by setting new bcrypt hashes.
 - Global `~/.cursor/mcp.json` `supabase` entry points at EquityHealthSys (`fkgwjkcixpjxxnhlqwow`) and is intentionally left as-is; this repo and `~/Desktop/dev/deploy/equityhealthsystems` each pin their project in `.cursor/mcp.json`.
 - Pre-existing `public.rls_auto_enable()` (Supabase-provided) and "leaked password protection disabled" advisor warnings; left untouched.
-- The home page briefly loads before redirecting signed-out users (client-side gate; data is protected by RLS regardless).
+- Auth gate is client-side only (static hosting): the page is hidden until verified, but data protection still rests on RLS. Because sessions use sessionStorage, each new tab/window needs a fresh sign-in (personal links sign in automatically); the 8h cap is a client-side check a determined user could bypass, and server-side limits (Dashboard session time-box/inactivity, Pro plan) are not set.
 - The personal-link success path has been verified via the Auth API, not by clicking a real link in a browser (to keep keys out of logs).
 
 ## Update log
 
+- 2026-10-12: Bringing card moved to a sticky right column, entries shown as a Shape/Name/Item table with RSVP-yes identity badges (shape modulo 7, color modulo 2, newest RSVP = triangle + Maize & Blue). Cache-bust `?v=7`. Syntax-checked only, not browser-tested.
+- 2026-10-12: Bringing list. New `app_secrets` + `bring_items` tables and 5 RPCs (migration `20261012_bring_items.sql`, applied to the live project), side card next to the roster with add/edit/delete, client-side AES-GCM encryption instead of the requested SHA-256 (not reversible) with the key stored in the DB behind a signed-in-only RPC. Cache-bust bumped to `?v=6` (now `?v=7`).
+- 2026-10-12: Auth gate fixes. Root cause of content flashing: `.page { display: grid }` overrode the `hidden` attribute on `#app`; added global `[hidden] { display: none !important; }` to `styles.css`. `app.js` now runs `guard()` before revealing anything (session present, not older than 8h, `getUser()` validated server-side), re-runs it on bfcache restore (`pageshow` persisted) and when the tab becomes visible, and hides + redirects on `SIGNED_OUT`. Sessions moved from localStorage to sessionStorage (old `sb-*-auth-token` localStorage entries are purged), sign-in time stamped by `signIn()` for the 8h forced re-login; `login.js` no longer auto-forwards an expired session; logout and decline use local-scope `endSession()`. `login.js`/`invite.js` use the stamped `signIn`. Cache-bust bumped to `?v=6` (now `?v=7`). Not browser-tested (syntax-checked only).
+- 2026-10-09: Incident: while staging RSVP visuals I overwrote and then nulled Jack's real `first_signed_in_at` (he had signed in and set a password at ~19:32 UTC). Restored to 19:32:23 UTC from his `auth.users.updated_at`. Lesson: never stage or reset state on live `people` rows without first snapshotting them; prefer a local copy of the page or only touch rows with no sign-in in `auth.users`.
 - 2026-10-09: Maybe RSVP. Added `people.maybe_at`, `maybe_invite()`, teetering roster style, a Maybe button in the invite email (`invite.py`, syntax-checked only, never run) and on `invite.html`, and a Key beside the roster. Cache-bust bumped to `?v=4`. Tested via API (state transitions, anon denied, user_id still hidden) and visually with staged states, then reset.
 
 - 2026-10-09: Car changes in Supabase: added William to Car 1 (he was in no car in the PDF) and moved Matias from Car 3 to Car 4. Cars are now: Car 1 Liam, Ashley, Jesse, John, William; Car 2 Jack, Gabby, Conna, Lili, Hrdy; Car 3 Nate, TK, Katie M.; Car 4 Ben, Matias.

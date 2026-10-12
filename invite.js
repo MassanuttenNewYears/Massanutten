@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient.js?v=4";
+import { supabase, signIn as stampedSignIn, endSession } from "./supabaseClient.js?v=7";
 
 const $ = (id) => document.getElementById(id);
 const show = (...ids) => {
@@ -18,7 +18,7 @@ const action = ["decline", "maybe"].includes(requested) ? requested : "accept";
 history.replaceState(null, "", window.location.pathname + window.location.search);
 
 async function signIn() {
-  const { error } = await supabase.auth.signInWithPassword(creds);
+  const { error } = await stampedSignIn(creds);
   return error;
 }
 
@@ -67,7 +67,7 @@ $("confirm-decline").addEventListener("click", async () => {
   const { error } = await supabase.rpc("decline_invite");
   $("confirm-decline").disabled = false;
   if (error) return setStatus(error.message, "error");
-  await supabase.auth.signOut();
+  await endSession();
   $("sub").textContent = "Marked as not coming.";
   setStatus("");
   show("declined-step");

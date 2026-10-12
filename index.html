@@ -7,9 +7,9 @@
   <meta name="referrer" content="no-referrer">
   <title>Massanutten New Year's</title>
   <link rel="icon" href="./favicon.png">
-  <link rel="stylesheet" href="./styles.css?v=4">
+  <link rel="stylesheet" href="./styles.css?v=7">
   <style>
-    .page { max-width: 980px; margin: 0 auto; padding: 1.5rem 1rem 4rem; display: grid; gap: 1.5rem; }
+    .page { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 4rem; display: grid; gap: 1.5rem; }
 
     header.top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
     header.top h1 { margin: 0; font-size: 1.8rem; }
@@ -89,6 +89,22 @@
     }
     @media (prefers-reduced-motion: reduce) { .name.maybe { animation: none; } }
 
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 1.5rem; align-items: start; }
+    .main-col { display: grid; gap: 1.5rem; min-width: 0; }
+    .bring { position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow-y: auto; }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .bring { position: static; max-height: none; }
+    }
+    .bring-table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; font-size: .9rem; }
+    .bring-table th { text-align: left; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ice-dim); padding: .2rem .35rem .45rem; border-bottom: 1px solid var(--frost-border); }
+    .bring-table td { padding: .4rem .35rem; vertical-align: middle; border-bottom: 1px solid rgba(255, 255, 255, 0.06); overflow-wrap: anywhere; }
+    .bring-table .who-name { color: var(--ice); font-weight: 600; }
+    .bring-table .empty { color: var(--muted); font-style: italic; }
+    .bring-table .shape { display: block; width: 24px; height: 24px; }
+    .bring-table .row-actions { display: flex; gap: .3rem; white-space: nowrap; }
+    .bring-table button { padding: .2rem .5rem; font-size: .75rem; }
+    .bring-form .bring-buttons { display: flex; gap: .5rem; margin-top: .6rem; }
     .roster-wrap { display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap; }
     .roster-wrap .roster-table { flex: 1 1 380px; min-width: 0; }
     .legend {
@@ -155,6 +171,8 @@
       <h2 class="welcome" id="welcome">WELCOME TO JACK D. RELICHMAN'S 2026 SENDOFF 2027 JUMPSTART WEEKEND GETAWAY OF YOUR DREAMS !!!</h2>
     </section>
 
+    <div class="layout">
+    <div class="main-col">
     <section class="card">
       <h2>Roster</h2>
       <div class="roster-wrap">
@@ -168,6 +186,7 @@
         </aside>
       </div>
     </section>
+
 
     <section class="card">
       <h2>Cars</h2>
@@ -190,12 +209,31 @@
       </form>
       <p class="status" id="password-status" role="status"></p>
     </section>
+    </div>
+
+    <aside class="card bring" aria-label="What people are bringing">
+      <h2>Bringing</h2>
+      <table class="bring-table">
+        <thead><tr><th>Shape</th><th>Name</th><th>Item</th><th></th></tr></thead>
+        <tbody id="bring-list"></tbody>
+      </table>
+      <form id="bring-form" class="bring-form">
+        <label for="bring-input">What are you bringing?</label>
+        <input id="bring-input" type="text" maxlength="200" autocomplete="off" required>
+        <div class="bring-buttons">
+          <button type="submit" id="bring-submit">Add</button>
+          <button type="button" id="bring-cancel" class="ghost" hidden>Cancel</button>
+        </div>
+      </form>
+      <p class="status" id="bring-status" role="status"></p>
+    </aside>
+    </div>
 
     <p class="status" id="status" role="status"></p>
   </div>
 
-  <script src="./vendor/supabase-js-2.117.3.umd.js?v=4"></script>
-  <script src="./snow.js?v=4"></script>
-  <script type="module" src="./app.js?v=4"></script>
+  <script src="./vendor/supabase-js-2.117.3.umd.js?v=7"></script>
+  <script src="./snow.js?v=7"></script>
+  <script type="module" src="./app.js?v=7"></script>
 </body>
 </html>
