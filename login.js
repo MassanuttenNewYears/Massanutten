@@ -1,4 +1,4 @@
-import { supabase, signIn as rawSignIn, sessionExpired, endSession } from "./supabaseClient.js?v=9";
+import { supabase, signIn as rawSignIn, sessionExpired, endSession } from "./supabaseClient.js?v=10";
 
 const $ = (id) => document.getElementById(id);
 const goHome = () => window.location.replace("./");

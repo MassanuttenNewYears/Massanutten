@@ -1,4 +1,4 @@
-import { supabase, signIn as stampedSignIn, endSession } from "./supabaseClient.js?v=9";
+import { supabase, signIn as stampedSignIn, endSession } from "./supabaseClient.js?v=10";
 
 const $ = (id) => document.getElementById(id);
 const show = (...ids) => {
