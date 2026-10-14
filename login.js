@@ -10,7 +10,7 @@ function setStatus(text, kind = "") {
 
 async function signIn(email, password) {
   const { error } = await rawSignIn({ email, password });
-  // The rainbow name is triggered by setting a password (invite.js / home page), not by login.
+  // The rainbow name is triggered by setting a password (invite.js / account page), not by login.
   return error ?? null;
 }
 

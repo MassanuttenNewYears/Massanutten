@@ -22,9 +22,20 @@ async function signIn() {
   return error;
 }
 
+let offeredToDrive = false;
+
+function resetDrive() {
+  offeredToDrive = false;
+  $("drive-yes").disabled = false;
+  $("drive-no").disabled = false;
+  $("drive-note").textContent = "";
+  $("drive-note").hidden = true;
+}
+
 function startAccept() {
   $("sub").textContent = "Welcome. Pick a password to finish.";
   setStatus("");
+  resetDrive();
   show("accept-step");
 }
 
@@ -85,6 +96,25 @@ async function switchToAccept() {
 }
 $("switch-accept").addEventListener("click", switchToAccept);
 $("undo-decline").addEventListener("click", switchToAccept);
+
+$("drive-no").addEventListener("click", () => {
+  if (offeredToDrive) return;
+  $("drive-note").textContent = "No problem.";
+  $("drive-note").hidden = false;
+});
+
+$("drive-yes").addEventListener("click", async () => {
+  $("drive-yes").disabled = true;
+  $("drive-no").disabled = true;
+  const { error } = await supabase.rpc("offer_to_drive");
+  $("drive-yes").disabled = false;
+  $("drive-no").disabled = false;
+  if (error) return setStatus(error.message, "error");
+  offeredToDrive = true;
+  $("drive-note").textContent = "You're listed as a possible driver.";
+  $("drive-note").hidden = false;
+  setStatus("");
+});
 
 $("password-form").addEventListener("submit", async (e) => {
   e.preventDefault();

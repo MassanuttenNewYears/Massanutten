@@ -90,6 +90,13 @@ const ROSTER_HEADINGS = {
   "Foids (W)": "FOIDS (W (We <3 you Women))",
 };
 
+// Grey names have not answered. Once every roster row is yes, maybe, or declined, the card border cycles the yes-name colors.
+function everyoneRsvped(people) {
+  return people.length > 0 && people.every((person) =>
+    person.declined_at || person.maybe_at || person.first_signed_in_at
+  );
+}
+
 function renderRoster(people) {
   const groups = [];
   const byGroup = new Map();
@@ -112,6 +119,7 @@ function renderRoster(people) {
       }))
     )
   );
+  $("roster-card").classList.toggle("all-rsvped", everyoneRsvped(people));
 }
 
 // The key beside the roster. Uses made-up sample names so it never reveals real data.
@@ -334,16 +342,6 @@ $("logout").addEventListener("click", async () => {
   $("app").hidden = true;
   await endSession();
   toLogin();
-});
-
-$("password-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const { error } = await supabase.auth.updateUser({ password: $("new-password").value });
-  if (error) return setStatus("password-status", error.message, "error");
-  $("new-password").value = "";
-  await supabase.rpc("mark_first_sign_in");
-  setStatus("password-status", "Password saved.", "ok");
-  loadAll();
 });
 
 supabase.auth.onAuthStateChange((event, session) => {

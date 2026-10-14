@@ -15,6 +15,7 @@
     header.top h1 { margin: 0; font-size: 1.8rem; }
     header.top h1 span { color: var(--ice); }
     .who { color: var(--ice-dim); font-size: .9rem; display: flex; align-items: center; gap: .75rem; }
+    .who a { color: var(--ice); font-weight: 700; text-decoration: underline; text-underline-offset: .18em; }
     .who button { padding: .45rem .8rem; font-size: .85rem; }
 
     .hero { display: flex; align-items: center; justify-content: center; gap: 2rem; flex-wrap: wrap; }
@@ -76,6 +77,34 @@
       .name.active span { animation: rgb 6s linear infinite; animation-delay: calc(var(--i) * -0.3s); }
     }
 
+    @property --roster-angle {
+      syntax: "<angle>";
+      inherits: false;
+      initial-value: 0deg;
+    }
+    @keyframes roster-spin { to { --roster-angle: 360deg; } }
+    #roster-card.all-rsvped {
+      position: relative;
+      border-color: transparent;
+    }
+    #roster-card.all-rsvped::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 3px;
+      background: conic-gradient(from var(--roster-angle), #ff3b3b, #ffb02e, #f7ff3b, #3bff6f, #3bc9ff, #a63bff, #ff3b3b);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      animation: roster-spin 2.4s linear infinite;
+      pointer-events: none;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #roster-card.all-rsvped::before { animation-duration: 8s; }
+    }
+
     .name.maybe {
       display: inline-block;
       color: var(--ice);
@@ -131,10 +160,6 @@
     .day .date { margin: .15rem 0 .6rem; font-weight: 600; color: var(--ice); }
     .day ul { margin: 0; padding-left: 1.1rem; display: grid; gap: .25rem; }
     .day .empty { color: var(--muted); font-style: italic; }
-
-    .password-form { display: flex; gap: .75rem; flex-wrap: wrap; align-items: end; }
-    .password-form > div { flex: 1 1 220px; }
-    .password-form label { margin-top: 0; }
   </style>
 </head>
 <body>
@@ -143,7 +168,7 @@
     <div class="main-col">
     <header class="top">
       <h1>Massanutten <span>New Year's</span></h1>
-      <div class="who">Signed in as <strong id="who"></strong> <button id="logout" class="ghost" type="button">Log out</button></div>
+      <div class="who">Signed in as <a id="who" href="account/"></a> <button id="logout" class="ghost" type="button">Log out</button></div>
     </header>
 
     <section class="card hero">
@@ -169,7 +194,7 @@
       <h2 class="welcome" id="welcome">WELCOME TO JACK D. RELICHMAN'S 2026 SENDOFF 2027 JUMPSTART WEEKEND GETAWAY OF YOUR DREAMS !!!</h2>
     </section>
 
-    <section class="card">
+    <section class="card" id="roster-card">
       <h2>Roster</h2>
       <div class="roster-wrap">
         <table class="roster-table">
@@ -189,17 +214,6 @@
       <ol class="timeline" id="itinerary"></ol>
     </section>
 
-    <section class="card">
-      <h2>Your password</h2>
-      <form class="password-form" id="password-form">
-        <div>
-          <label for="new-password">Set your own password (optional)</label>
-          <input id="new-password" type="password" minlength="6" maxlength="72" autocomplete="new-password" required>
-        </div>
-        <button type="submit">Save</button>
-      </form>
-      <p class="status" id="password-status" role="status"></p>
-    </section>
     </div>
 
     <aside class="card bring" aria-label="What people are bringing">
@@ -225,6 +239,6 @@
 
   <script src="./vendor/supabase-js-2.117.3.umd.js?v=10"></script>
   <script src="./snow.js?v=10"></script>
-  <script type="module" src="./app.js?v=13"></script>
+  <script type="module" src="./app.js?v=15"></script>
 </body>
 </html>

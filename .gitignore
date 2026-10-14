@@ -1,6 +1,12 @@
 .env
 invite.py
+secret_liq.py
+secret_liquor_emails.txt
+secret_liquor_pairings.txt
+secret_liquor_sent.txt
 invites.local.json
 *.local.sql
 *.pdf
 .DS_Store
+Dc Comics Batman GIF.gif
+__pycache__/

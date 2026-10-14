@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://vxevjynsfzemnzqxcfgt.supabase.co; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Account | Massanutten New Year's</title>
+  <link rel="icon" href="../favicon.png">
+  <link rel="stylesheet" href="../styles.css?v=10">
+  <style>
+    body { display: grid; place-items: center; min-height: 100vh; overflow: auto; }
+    @supports (place-items: safe center) {
+      body { place-items: safe center; }
+    }
+    .mountains {
+      position: fixed; inset: auto 0 0 0; height: 24vh; pointer-events: none; z-index: 0;
+      background: linear-gradient(180deg, #c9dcf2 0%, #7f9dc0 100%);
+      opacity: .55;
+      clip-path: polygon(0 100%, 0 55%, 18% 20%, 32% 50%, 50% 5%, 68% 45%, 82% 25%, 100% 60%, 100% 100%);
+    }
+    .card { width: min(420px, 92vw); padding: 2rem 1.75rem; }
+    .card h1 { margin: 0 0 .25rem; font-size: 1.6rem; }
+    .card h1 span { color: var(--ice); }
+    .sub { margin: 0 0 1.25rem; color: var(--ice-dim); font-size: .95rem; }
+    .back { color: var(--ice); font-size: .85rem; }
+    .account-name { margin: 0 0 1rem; color: #fff; font-size: 1.15rem; }
+    .current { margin: .35rem 0 0; color: var(--ice-dim); font-size: .95rem; }
+    button[type="submit"] { width: 100%; margin-top: 1.4rem; }
+    #status { margin: 1rem 0 0; text-align: center; }
+    #liquor { margin: 0 0 1.25rem; }
+    #liquor h2 { margin-bottom: .35rem; }
+    .liquor-line { margin: 0; font-size: 1.05rem; }
+    #liquor-name { font-weight: 700; color: #fff; }
+    #drivers { margin-top: 1.5rem; }
+    .drivers-table { width: 100%; border-collapse: collapse; }
+    .drivers-table th { text-align: left; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ice-dim); padding: .2rem 0 .45rem; border-bottom: 1px solid var(--frost-border); }
+    .drivers-table td { padding: .45rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+    .drivers-table .empty { color: var(--muted); font-style: italic; }
+  </style>
+</head>
+<body>
+  <div class="mountains" aria-hidden="true"></div>
+
+  <main class="card" id="app" hidden>
+    <p><a class="back" href="../">Back</a></p>
+    <h1>Your <span>account</span></h1>
+    <p class="sub">Signed in as <span id="who"></span></p>
+    <p class="account-name" id="display-name"></p>
+
+    <section id="liquor" hidden>
+      <h2>Secret liquor</h2>
+      <p class="liquor-line">Your target is <span id="liquor-name"></span>.</p>
+    </section>
+
+    <label for="current-password">Current password</label>
+    <p class="current" id="current-password">Cannot be shown. Only a hash is stored.</p>
+
+    <form id="password-form">
+      <label for="new-password">Set your own password</label>
+      <input id="new-password" type="password" minlength="6" maxlength="72" autocomplete="new-password" required>
+      <button type="submit" id="save-password">Save</button>
+    </form>
+    <section id="drivers" hidden>
+      <h2>Potential drivers</h2>
+      <table class="drivers-table">
+        <thead>
+          <tr><th>Name</th></tr>
+        </thead>
+        <tbody id="drivers-body"></tbody>
+      </table>
+    </section>
+    <p id="status" class="status" role="status"></p>
+  </main>
+
+  <script src="../vendor/supabase-js-2.117.3.umd.js?v=10"></script>
+  <script src="../snow.js?v=10"></script>
+  <script type="module" src="./account.js?v=16"></script>
+</body>
+</html>
