@@ -84,6 +84,12 @@ function renderName(person) {
   return el("span", { className: "declined", title: "Not coming" }, [name]);
 }
 
+// Display labels for the roster card headings only. Stored group_label values stay unchanged.
+const ROSTER_HEADINGS = {
+  Folk: "MOIDS (FOLK)",
+  "Foids (W)": "FOIDS (W (We <3 you Women))",
+};
+
 function renderRoster(people) {
   const groups = [];
   const byGroup = new Map();
@@ -96,7 +102,7 @@ function renderRoster(people) {
   }
   for (const list of byGroup.values()) list.sort((a, b) => a.sort_order - b.sort_order);
 
-  $("roster-head").replaceChildren(...groups.map((g) => el("th", { textContent: g })));
+  $("roster-head").replaceChildren(...groups.map((g) => el("th", { textContent: ROSTER_HEADINGS[g] || g })));
   const rows = Math.max(0, ...groups.map((g) => byGroup.get(g).length));
   $("roster-body").replaceChildren(
     ...Array.from({ length: rows }, (_, r) =>
@@ -124,19 +130,6 @@ function renderLegend() {
 }
 renderLegend();
 
-function renderCars(cars) {
-  $("cars").replaceChildren(
-    ...cars.map((car) =>
-      el("div", { className: "car" }, [
-        el("h3", { textContent: car.name }),
-        el("ul", {}, [...car.car_passengers]
-          .sort((a, b) => a.sort_order - b.sort_order)
-          .map((p) => el("li", { textContent: p.name }))),
-      ])
-    )
-  );
-}
-
 const dateFmt = new Intl.DateTimeFormat(undefined, { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
 
 function renderItinerary(days) {
@@ -154,16 +147,14 @@ function renderItinerary(days) {
 }
 
 async function loadAll() {
-  const [people, cars, days] = await Promise.all([
+  const [people, days] = await Promise.all([
     supabase.from("people").select("display_name,group_label,sort_order,first_signed_in_at,declined_at,maybe_at").order("id"),
-    supabase.from("cars").select("name,sort_order,car_passengers(name,sort_order)").order("sort_order"),
     supabase.from("itinerary_days").select("day_number,day_date,items").order("day_number"),
   ]);
-  const error = people.error || cars.error || days.error;
+  const error = people.error || days.error;
   if (error) return setStatus("status", error.message, "error");
   computeIdentities(people.data);
   renderRoster(people.data);
-  renderCars(cars.data);
   renderItinerary(days.data);
   loadBring(); // after identities so badges are right
 }

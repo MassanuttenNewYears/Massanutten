@@ -9,7 +9,7 @@
   <link rel="icon" href="./favicon.png">
   <link rel="stylesheet" href="./styles.css?v=10">
   <style>
-    .page { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 4rem; display: grid; gap: 1.5rem; }
+    .page { max-width: 1600px; margin: 0 auto; padding: 1.5rem 1rem 4rem; display: grid; gap: 1.5rem; }
 
     header.top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
     header.top h1 { margin: 0; font-size: 1.8rem; }
@@ -40,8 +40,8 @@
     }
     @media (prefers-reduced-motion: reduce) { .welcome .ch { animation: none; } }
 
-    .roster-table { width: 100%; border-collapse: collapse; }
-    .roster-table th { text-align: left; font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ice-dim); padding: .25rem .5rem .6rem; border-bottom: 1px solid var(--frost-border); }
+    .roster-table { width: 100%; min-width: max-content; border-collapse: collapse; }
+    .roster-table th { text-align: left; font-size: .8rem; letter-spacing: .1em; text-transform: none; white-space: nowrap; color: var(--ice-dim); padding: .25rem .5rem .6rem; border-bottom: 1px solid var(--frost-border); }
     .roster-table td { padding: .45rem .5rem; height: 2.6rem; vertical-align: middle; border-bottom: 1px solid rgba(255, 255, 255, 0.06); width: 50%; }
 
     .name { font-size: 1.05rem; }
@@ -106,8 +106,8 @@
     .bring-table .row-actions { display: flex; gap: .3rem; white-space: nowrap; }
     .bring-table button { padding: .2rem .5rem; font-size: .75rem; }
     .bring-form .bring-buttons { display: flex; gap: .5rem; margin-top: .6rem; }
-    .roster-wrap { display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap; }
-    .roster-wrap .roster-table { flex: 1 1 380px; min-width: 0; }
+    .roster-wrap { display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap; min-width: 0; overflow-x: auto; }
+    .roster-wrap .roster-table { flex: 1 1 32rem; min-width: max-content; }
     .legend {
       flex: 0 0 250px; padding: 1rem; border-radius: 14px;
       background: rgba(7, 20, 40, 0.45); border: 1px solid var(--frost-border);
@@ -124,11 +124,6 @@
     }
     .declined::before { transform: translateY(-50%) rotate(14deg); }
     .declined::after { transform: translateY(-50%) rotate(-14deg); }
-
-    .cars { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; }
-    .car { padding: 1rem; border-radius: 14px; background: rgba(7, 20, 40, 0.45); border: 1px solid var(--frost-border); }
-    .car h3 { margin: 0 0 .6rem; font-size: 1rem; color: var(--ice); }
-    .car ul { margin: 0; padding-left: 1.1rem; display: grid; gap: .25rem; }
 
     .timeline { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; }
     .day { padding: 1rem; border-radius: 14px; background: rgba(7, 20, 40, 0.45); border: 1px solid var(--frost-border); }
@@ -190,11 +185,6 @@
 
 
     <section class="card">
-      <h2>Cars</h2>
-      <div class="cars" id="cars"></div>
-    </section>
-
-    <section class="card">
       <h2>Itinerary</h2>
       <ol class="timeline" id="itinerary"></ol>
     </section>
@@ -235,6 +225,6 @@
 
   <script src="./vendor/supabase-js-2.117.3.umd.js?v=10"></script>
   <script src="./snow.js?v=10"></script>
-  <script type="module" src="./app.js?v=10"></script>
+  <script type="module" src="./app.js?v=13"></script>
 </body>
 </html>
