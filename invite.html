@@ -22,6 +22,15 @@
     form { text-align: left; }
     form button { width: 100%; margin-top: 1.25rem; }
     #status { margin-top: 1rem; }
+    .drive {
+      margin: 0 0 1.25rem;
+      padding: 1rem 1rem .25rem;
+      border: 1px solid var(--frost-border);
+      border-radius: 12px;
+    }
+    .drive p { margin: 0 0 .85rem; }
+    .drive .actions { margin-top: 0; }
+    #drive-note { color: var(--ice-dim); font-size: .9rem; }
     [hidden] { display: none !important; }
   </style>
 </head>
@@ -68,8 +77,16 @@
       </div>
     </section>
 
-    <!-- Accept: set password -->
+    <!-- Accept: drive question, then set password -->
     <section id="accept-step" hidden>
+      <div class="drive">
+        <p>Can you drive?</p>
+        <div class="actions">
+          <button id="drive-yes" type="button">Yes</button>
+          <button id="drive-no" class="ghost" type="button">No</button>
+        </div>
+        <p id="drive-note" hidden></p>
+      </div>
       <form id="password-form">
         <label for="new-password">Choose a password</label>
         <input id="new-password" type="password" minlength="6" maxlength="72" autocomplete="new-password" required>
@@ -82,6 +99,6 @@
 
   <script src="./vendor/supabase-js-2.117.3.umd.js?v=10"></script>
   <script src="./snow.js?v=10"></script>
-  <script type="module" src="./invite.js?v=10"></script>
+  <script type="module" src="./invite.js?v=11"></script>
 </body>
 </html>
