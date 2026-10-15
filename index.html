@@ -118,7 +118,7 @@
     }
     @media (prefers-reduced-motion: reduce) { .name.maybe { animation: none; } }
 
-    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 1.5rem; align-items: start; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 1.5rem; align-items: start; }
     .main-col { display: grid; gap: 1.5rem; min-width: 0; }
     .bring { position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow-y: auto; }
     @media (max-width: 900px) {
@@ -126,8 +126,12 @@
       .bring { position: static; max-height: none; }
     }
     .bring-table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; font-size: .9rem; }
-    .bring-table th { text-align: left; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ice-dim); padding: .2rem .35rem .45rem; border-bottom: 1px solid var(--frost-border); }
-    .bring-table td { padding: .4rem .35rem; vertical-align: middle; border-bottom: 1px solid rgba(255, 255, 255, 0.06); overflow-wrap: anywhere; }
+    .bring-table th { text-align: left; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ice-dim); padding: .2rem .35rem .45rem; border-bottom: 1px solid var(--frost-border); white-space: nowrap; }
+    .bring-table td { padding: .4rem .35rem; vertical-align: middle; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+    .bring-table td:nth-child(3) { overflow-wrap: anywhere; }
+    .bring-table td:first-child:not(.empty),
+    .bring-table td.who-name,
+    .bring-table td:last-child:not(.empty) { width: 1%; white-space: nowrap; }
     .bring-table .who-name { color: var(--ice); font-weight: 600; }
     .bring-table .empty { color: var(--muted); font-style: italic; }
     .shape { display: block; width: 22px; height: 22px; flex: none; }
