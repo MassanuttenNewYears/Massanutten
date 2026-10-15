@@ -48,7 +48,7 @@ async function init() {
   const error = await signIn();
   if (error) {
     $("sub").textContent = "This link can't be used any more.";
-    return setStatus("If you already set a password, sign in on the login page. Otherwise ask John for a new invitation.", "error");
+    return setStatus("If you already chose a password, open the login page and sign in with the email address this invitation was sent to. Otherwise ask John for a new invitation.", "error");
   }
 
   if (action === "decline") {
@@ -124,7 +124,11 @@ $("password-form").addEventListener("submit", async (e) => {
     $("save-password").disabled = false;
     return setStatus(error.message, "error");
   }
-  await supabase.rpc("mark_first_sign_in");
+  const { error: stampError } = await supabase.rpc("mark_first_sign_in");
+  if (stampError) {
+    $("save-password").disabled = false;
+    return setStatus(stampError.message, "error");
+  }
   window.location.replace("./");
 });
 

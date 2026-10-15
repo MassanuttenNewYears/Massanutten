@@ -102,7 +102,11 @@ $("password-form").addEventListener("submit", async (e) => {
     $("save-password").disabled = false;
     return setStatus(error.message, "error");
   }
-  await supabase.rpc("mark_first_sign_in");
+  const { error: stampError } = await supabase.rpc("mark_first_sign_in");
+  if (stampError) {
+    $("save-password").disabled = false;
+    return setStatus(stampError.message, "error");
+  }
   $("new-password").value = "";
   $("save-password").disabled = false;
   setStatus("Password saved.", "ok");
