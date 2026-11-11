@@ -1,4 +1,4 @@
-import { supabase, signIn as stampedSignIn, endSession } from "./supabaseClient.js?v=10";
+import { supabase, signIn as stampedSignIn, endSession } from "./supabaseClient.js?v=18";
 
 const $ = (id) => document.getElementById(id);
 const show = (...ids) => {
@@ -48,7 +48,7 @@ async function init() {
   const error = await signIn();
   if (error) {
     $("sub").textContent = "This link can't be used any more.";
-    return setStatus("If you already chose a password, open the login page and sign in with the email address this invitation was sent to. Otherwise ask <redacted> for a new invitation.", "error");
+    return setStatus("If you already chose a password, open the login page and sign in with the email address this invitation was sent to. Otherwise ask the host for a new invitation.", "error");
   }
 
   if (action === "decline") {
@@ -119,6 +119,11 @@ $("drive-yes").addEventListener("click", async () => {
 $("password-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   $("save-password").disabled = true;
+  const { error: readyError } = await supabase.rpc("check_invite_ready");
+  if (readyError) {
+    $("save-password").disabled = false;
+    return setStatus(readyError.message, "error");
+  }
   const { error } = await supabase.auth.updateUser({ password: $("new-password").value });
   if (error) {
     $("save-password").disabled = false;

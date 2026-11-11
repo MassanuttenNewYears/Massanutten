@@ -1,4 +1,4 @@
-import { supabase, signIn as rawSignIn, sessionExpired, endSession } from "./supabaseClient.js?v=10";
+import { supabase, signIn as rawSignIn, sessionExpired, endSession } from "./supabaseClient.js?v=18";
 
 const $ = (id) => document.getElementById(id);
 const goHome = () => window.location.replace("./");
@@ -36,7 +36,7 @@ async function init() {
     if (!error) return goHome();
     $("login-form").hidden = false;
     $("sub").textContent = "Sign in to warm up.";
-    setStatus("That personal link didn't work. Ask <redacted> for a new one.", "error");
+    setStatus("That personal link didn't work. Ask the host for a new one.", "error");
     return;
   }
 

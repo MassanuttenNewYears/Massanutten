@@ -1,4 +1,4 @@
-import { supabase, sessionExpired, endSession } from "./supabaseClient.js?v=10";
+import { supabase, sessionExpired, endSession } from "./supabaseClient.js?v=18";
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, props = {}, children = []) => {
@@ -155,12 +155,18 @@ function renderItinerary(days) {
 }
 
 async function loadAll() {
-  const [people, days] = await Promise.all([
+  const [people, days, cfg] = await Promise.all([
     supabase.from("people").select("display_name,group_label,sort_order,first_signed_in_at,declined_at,maybe_at").order("id"),
     supabase.from("itinerary_days").select("day_number,day_date,items").order("day_number"),
+    supabase.from("site_config").select("key,value"),
   ]);
-  const error = people.error || days.error;
+  const error = people.error || days.error || cfg.error;
   if (error) return setStatus("status", error.message, "error");
+  const headline = (cfg.data || []).find((r) => r.key === "welcome_headline")?.value || "";
+  if (headline) {
+    $("welcome").textContent = headline;
+    shakeLetters($("welcome"));
+  }
   computeIdentities(people.data);
   renderRoster(people.data);
   renderItinerary(days.data);
@@ -170,6 +176,7 @@ async function loadAll() {
 // Split the welcome headline into individually shaking letters (words stay unbroken).
 function shakeLetters(node) {
   const text = node.textContent.trim();
+  if (!text) return;
   node.setAttribute("aria-label", text);
   const words = text.split(/\s+/).map((word) => {
     const letters = [...word].map((ch) => {
@@ -183,7 +190,6 @@ function shakeLetters(node) {
   });
   node.replaceChildren(...words.flatMap((w, i) => (i ? [" ", w] : [w])));
 }
-shakeLetters($("welcome"));
 
 // ---- "Bringing" list: entries are AES-256-GCM encrypted in the browser; the database only stores
 // ciphertext. The passphrase + salt are fetched (signed-in users only) via get_bring_secret().

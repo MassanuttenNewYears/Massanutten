@@ -1,4 +1,4 @@
-import { supabase, sessionExpired, endSession } from "../supabaseClient.js?v=10";
+import { supabase, sessionExpired, endSession } from "../supabaseClient.js?v=18";
 
 const $ = (id) => document.getElementById(id);
 const toLogin = () => window.location.replace("../login.html");

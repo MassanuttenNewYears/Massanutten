@@ -19,7 +19,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     persistSession: true,
     storage: window.sessionStorage,
     autoRefreshToken: true,
-    detectSessionInUrl: true,
+    detectSessionInUrl: false,
   },
 });
 
@@ -46,7 +46,15 @@ export function sessionExpired() {
 
 export async function endSession() {
   sessionStorage.removeItem(STAMP_KEY);
-  await supabase.auth.signOut({ scope: "local" }); // clears local state even if the server call fails
+  try {
+    await supabase.auth.signOut({ scope: "local" }); // revokes this session on the server and clears storage
+  } catch {
+    // Fall through to guarantee local token cleanup if the network/client call throws.
+  } finally {
+    for (const key of Object.keys(sessionStorage)) {
+      if (key.startsWith("sb-")) sessionStorage.removeItem(key);
+    }
+  }
 }
 
 // Works at both https://org.github.io/Massanutten/ and a local server.

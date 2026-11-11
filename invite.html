@@ -7,7 +7,7 @@
   <meta name="referrer" content="no-referrer">
   <title>Your invitation | Massanutten New Year's</title>
   <link rel="icon" href="./favicon.png">
-  <link rel="stylesheet" href="./styles.css?v=10">
+  <link rel="stylesheet" href="./styles.css?v=18">
   <style>
     body { display: grid; place-items: center; padding: 1rem; }
     .card { width: min(460px, 94vw); padding: 2rem 1.75rem; text-align: center; }
@@ -88,8 +88,8 @@
         <p id="drive-note" hidden></p>
       </div>
       <form id="password-form">
-        <label for="new-password">Choose a password</label>
-        <input id="new-password" type="password" minlength="6" maxlength="72" autocomplete="new-password" required>
+        <label for="new-password">Choose a password (10+ characters)</label>
+        <input id="new-password" type="password" minlength="10" maxlength="72" autocomplete="new-password" required>
         <button type="submit" id="save-password">Save and enter</button>
       </form>
     </section>
@@ -97,8 +97,8 @@
     <p id="status" class="status" role="status"></p>
   </main>
 
-  <script src="./vendor/supabase-js-2.117.3.umd.js?v=10"></script>
-  <script src="./snow.js?v=10"></script>
-  <script type="module" src="./invite.js?v=12"></script>
+  <script src="./vendor/supabase-js-2.117.3.umd.js?v=18"></script>
+  <script src="./snow.js?v=18"></script>
+  <script type="module" src="./invite.js?v=18"></script>
 </body>
 </html>

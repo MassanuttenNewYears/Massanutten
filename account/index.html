@@ -7,7 +7,7 @@
   <meta name="referrer" content="no-referrer">
   <title>Account | Massanutten New Year's</title>
   <link rel="icon" href="../favicon.png">
-  <link rel="stylesheet" href="../styles.css?v=10">
+  <link rel="stylesheet" href="../styles.css?v=18">
   <style>
     body { display: grid; place-items: center; min-height: 100vh; overflow: auto; }
     @supports (place-items: safe center) {
@@ -57,8 +57,8 @@
     <p class="current" id="current-password">Cannot be shown. Only a hash is stored.</p>
 
     <form id="password-form">
-      <label for="new-password">Set your own password</label>
-      <input id="new-password" type="password" minlength="6" maxlength="72" autocomplete="new-password" required>
+      <label for="new-password">Set your own password (10+ characters)</label>
+      <input id="new-password" type="password" minlength="10" maxlength="72" autocomplete="new-password" required>
       <button type="submit" id="save-password">Save</button>
     </form>
     <section id="drivers" hidden>
@@ -73,8 +73,8 @@
     <p id="status" class="status" role="status"></p>
   </main>
 
-  <script src="../vendor/supabase-js-2.117.3.umd.js?v=10"></script>
-  <script src="../snow.js?v=10"></script>
-  <script type="module" src="./account.js?v=17"></script>
+  <script src="../vendor/supabase-js-2.117.3.umd.js?v=18"></script>
+  <script src="../snow.js?v=18"></script>
+  <script type="module" src="./account.js?v=18"></script>
 </body>
 </html>

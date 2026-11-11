@@ -6,9 +6,7 @@ alter table public.people
 
 revoke select (is_admin) on table public.people from public, anon, authenticated;
 
-update public.people
-   set is_admin = true
- where slug in ('<redacted>', '<redacted>');
+-- Admin rows are set out of band in public.people (do not commit slugs here).
 
 create or replace function public.list_potential_drivers()
 returns table (driver_name text)
