@@ -1,4 +1,4 @@
 exclude:
-  - kb
-  - supabase
+  - kb/
+  - supabase/
   - vendor/supabase-js-LICENSE
